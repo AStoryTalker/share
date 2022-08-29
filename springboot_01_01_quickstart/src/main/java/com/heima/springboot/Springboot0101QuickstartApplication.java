@@ -7,7 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class Springboot0101QuickstartApplication {
 
     public static void main(String[] args) {
-        //
+        //test2
         SpringApplication.run(Springboot0101QuickstartApplication.class, args);
     }
 
