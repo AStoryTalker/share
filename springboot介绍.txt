@@ -1,0 +1,1311 @@
+Springboot是一个框架中的框架，减少框架配置，统一配置信息，方便开发人员更好的编程
+
+
+starter
+    SpringBoot中常见项目名称，定义了当前项目使用的所有依赖坐标，以达到减少依赖配置的目的
+parent
+    所有SpringBoot项目要继承的项目，定义了若干个坐标版本号（依赖管理，而非依赖），
+    以达到减少依赖冲突的目的spring-boot-starter-parent各版本间存在着诸多坐标版本不同
+
+1、 SpringApplication.run(Springboot0101QuickstartApplication.class, args);相当于开启了一个Spring容器
+可以通过
+ConfigurableApplicationContext ac=SpringApplication.run(Springboot0101QuickstartApplication.class, args);
+ac.getBean(class);来获取spring IOC容器中指定的bean
+
+SpringBoot的引导类是Boot工程的执行入口，运行main方法就可以启动项目。
+SpringBoot工程运行后初始化Spring容器，扫描引导类所在包加载bean。
+相当于一个配置类，只扫描启动类所在包内的所有类，bean放入容器中
+
+springboot中内嵌一个tomcat服务器，一共有三款内置服务器 tomcat jetty undertow
+靠pom直接引进依赖，tomcat服务器启动java程序 而java程序又嵌入tomcat，乱套了？？？
+不，tomcat是由java开发的，本质是由java对象来调用编写好的web程序，，而引进依赖刚好可以直接使用该java对象来调用web程序
+
+@RestController标识在类上，功能为@controller+@ResponseBody：既标识了此类属于表述层又指明该类里所有的方法的返回值
+直接作为响应报文的响应体响应到浏览器
+
+@PutMapping=@RequestMapping( method = RequestMethod.PUT)
+@GetMapping("/{id}") = @RequestMapping( value="/{id}",method = RequestMethod.GET)
+DELETE与Post同上。
+
+修改配置信息
+    项目模块->src->main->resource->application.properties(里面是空白的，有需要自己添加键值对)
+    修改端口号：server.port=8080
+    #修改banner(运行时出现的大logo):
+        spring.main.banner-mode=off设置开启还是关闭
+        spring. banner.image.Location=Logo.png//利用图片路径自定义banner（logo）
+
+    #日志（ERROR、WARN、INFO、DEBUG）
+    logging.level.root=debug//设置日志级别 暂时设置为debug
+    root为全局，可以在不同的包下设置不同的级别，例： logging.level.报名=级别
+    配置信息有很多 想要查看都有哪些，可以访问spring官方网站->springboot选项->learn文档查看
+
+  SpringBoot配置文件加载顺序
+    application.properties > application.yml >application. yaml
+  yaml语法规则
+  ·大小写敏感
+  .属性层级关系使用多行描述，每行结尾使用冒号结束
+  .使用缩进表示层级关系，同层级左侧对齐，只允许使用空格（不允许使用Tab键)
+  .属性值前面添加空格（属性名与属性值之间使用冒号+空格作为分隔)
+  .#表示注释
+
+  字面值表示方式
+  boolean: TRUE  #TRUE ,true ,True , FALSE,false , False均可
+  float: 3.14 #6.8523015e+5#支持科学计数法
+  int: 123  #0b1610_0111_0100_1010_1110  #支持二进制、八进制、十六进制
+  null: ~   #使用~表示null
+  string: Helloworld  #字符串可以直接书写
+  string2: "Hello world"  #可以使用双引号包裹特殊字符
+  date: 2018-02-17  #日期必须使用yyyy-MM-dd格式
+  datetime: 2018-02-17T15:02:31+08:00 #时间和日期之间使用T连接，最后使用+代表时区
+
+  数组表示方式:在属性名书写位置的下方使用减号作为数据开始符号，每行书写一个数据，减号与数据间空格分隔(参考springboot_01_02_quickstart)
+  subject:
+    - Java
+    - 前端
+    - 大数据
+  enterprise:
+    name: itcast
+    age: 16
+  subject:
+    - Java
+    - 前端
+    - 大数据
+  likes: [王者荣耀,刺激战场]#数组书写缩略格式
+
+users: #对象数组格式
+  - name: Tom
+    age: 4
+  - name: Jerry
+    age: 5
+  #对象数组格式二
+user2:
+  -
+   name: Tom
+   age: 4
+  -
+   name: Jerry
+   age: 5
+#对象数组缩略格式
+users2: [ { name: Tom , age:4 } , { name : Jerry , age:5 }]
+
+yaml数据的读取：
+    1．使用@Value配合SpEL读取单个数据
+    2．如果数据存在多层级，依次书写层级名称即可
+
+baseDir: c:/win10
+#使用${属性名}引用数据
+tempDir: ${baseDir}/temp
+
+#使用引号包裹的字符串，其中的转义字符可以生效
+tempDir: "${baseDir}\temp\t1\t2\t3"
+
+1．使用Environment对象封装全部配置信息
+2．使用@Autowired自动装配数据到Environment对象中
+@autoWired
+private Environment env;
+
+springboot配置文件后期数据较多，使用起来不方便，可以将经常用到的数据封装到类里
+这里用到@ConfigurationProperties("str")注解 ,str为配置文件里所需的配置的“索引”
+还要将这个类加@Component注解来接受spring的管理
+
+springboot整合junit技术
+若测试类与引导类不在同一包下会导致测试类找不到引导类，从而导致运行报错
+解决方案：（1）放到同一包下
+        （2）在测试类的@SpringBootTest注解后加括号将引导类引入，例：@SpringBootTest(classes = SpringbootJunitApplication.class)
+
+springboot整合mybatis技术
+    1．勾选MyBatis技术，也就是导入MyBatis对应的starter
+    2．数据库连接相关信息转换成配置
+    3。数据库SQL映射需要添加@Mapper被容器识别到
+    4、低版本的springboot配置的低版本mysql需要在server或者driver里配置时区，否则会报错，
+        例：url: jdbc:mysql://localhost:3306/ssm_db?serverTimezone=UTC
+
+springboot整合mybatis plus技术
+          1、建项目的时候只添加 MySQL Driver就好
+          2、在mvnrepostory.com里找到mybatis plus依赖
+          3、添加到配置文件中 将springboot基础那个依赖注释掉
+          前三步可以直接用阿里云网站源来设置来省略
+          4、接口继承BaseMapper<pojo> 加个@Mapper注释
+          5、因为BaseMapper<pojo>默认 里面的pojo与表名映射，所以可能通过pojo名找不到表名，所以
+            添加配置，此案例为加前缀。
+            mybatis-plus:
+              global-config:
+                db-config:
+                  table-prefix: tbl_
+                  根据数据库的自增策略自增
+                  id-type: auto
+                  日志开启
+              configuration:
+                  log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+          mybatis-plus乐观锁：//添加乐观锁插件
+          interceptor.addInnerInterceptor(new optimisticLockerInnerInterceptor());
+
+          若数据类型为枚举，则在数据库所要添加属性的字段上添加@EnumValue ，后在配置文件中添加扫描的包
+            #扫描通用枚举的包
+            type-enums-package: com.atguigu.mybatisplus.enums
+            在pojo类上写注解@TableName("数据库表名"),防止类名与表名不同时报错
+            @TableId，加载pojo的主键属性上，防止数据库表的主键名称不为id时报错
+            @TableId(value="表的主键名")，防止数据库主键名与pojo的id名不同时报错
+            @TableId(value="表的主键名",type=IdType.AUTO),主键为空时设置之间的生成策略，默认为雪花算法，设为自动递增
+            //指定属性所对应的字段名
+            @TableField("user_namel")
+            private string name;
+            @TableLogic 逻辑删除
+
+          代码生成器：
+            根据表，生成所有代码
+            1、导坐标，<dependency>
+                  <groupId>com.baomidou</groupId>
+                  <artifactId>mybatis-plus-generator</artifactId>
+                  <version>3.5.1</version>
+                  </dependency>
+                  <dependency>
+                  <groupId>org.freemarkerk/groupId>
+                  <artifactId>freemarker</artifact1d>
+                  <version>2.3.31</version>
+                  </dependency>
+
+            2、在官网中类模板类
+            3、执行该模板类
+
+          配置多数据源：
+            1、导坐标
+                <dependency>
+                <groupId>com.baomidou</groupId>
+                <artifactId>dynamic-datasource-spring-boot-starter</artifactId>
+                <version>3.5.0</version>
+                </dependency>
+
+            2、配置文件配置
+            spring:
+            #配置数据源信息
+              datasource:
+                dynamic:
+            #设置默认的数据源或者数据源组,默认值即为master
+                  primary: master
+            #严格匹配数据源,默认false.true未匹配到指定数据源时抛异常, false使用默认数据源
+                  strict: false
+                  datasource:
+                    master :
+                      url: jdbc:mysq1://loca7host: 3306/mybatis_plus?characterEncoding=utf-8&usesSL=false
+                      driver-class-name: com.mysql.cj.jdbc.Driver
+                      username: root
+                      password: 123456
+                    slave_1:
+                      url: jdbc:mysql:/ /loca7host: 3306/mybatis_plus_1?characterEncoding=utf-8&usessL=false
+                      driver-class-name: com.mysql.cj.jdbc.Driver
+                      username : root
+                      password : 123456
+
+            3、在业务层类上加上注解@Ds( "master（指定的数据源名称）")//指定所操作的数据源,可以注解在方法上或类上，
+                同时存在就近原则方法上注解优先于类上注解。
+
+          MybatisX插件，快速查找mapper接口与xml文件的对应，通过表创建一个项目里的模板文件
+
+
+springboot整合druid技术
+    与其他技术整合步骤差不多
+    在配置文件中添加spring:
+              datasource:
+                druid:
+                  driver-class-name: com.mysql.cj.jdbc.Driver
+                  url: jdbc:mysql://localhost:3306/springboot_tbl
+                  username: kyc
+                  password: QQ1512310136
+
+lombok插件：可以通过注解简化开发，用之前先导入依赖
+@Data ： 注在类上，提供类的get、set、equals、hashCode、toString等方法
+@AllArgsConstructor ：注在类上，提供类的全参构造
+@NoArgsConstructor ：注在类上，提供类的无参构造
+@Setter ：注在属性上，提供 set 方法
+@Getter ：注在属性上，提供 get 方法
+@EqualsAndHashCode ：注在类上，提供对应的 equals 和 hashCode 方法
+@Log4j/@Slf4j ：注在类上，提供对应的 Logger 对象，变量名为 log
+@ToString效果与用法同上
+
+为方便调试，可以开启mybatisplus日志
+在配置文件里加配置
+
+分页配置（springboot_ssmp）
+    1．使用IPage封装分页数据
+    2．分页操作依赖MyBatisPlus分页拦截器实现功能(格式固定)
+    3．借助MyBatisPlus日志查阅执行SQL语句
+条件查询：
+    1．使用Querywrapper对象封装查询条件
+    2．推荐使用LambdaQuerywrapper对象
+    3．所有查询操作封装成方法调用
+    4．查询条件支持动态条件拼装
+
+业务层开发———快速开发
+    快速开发方案
+    使用MyBatisPlus提供有业务层通用接口（ISerivce<T>)与业务层通用实现类（ServiceImpl<M,T>)
+    在通用类基础上做功能重载或功能追加
+    注意重载时不要覆盖原始操作，避免原始提供的功能丢失
+
+
+区别
+@RequestParam用于接收url地址传参或表单传参
+@RequestBody用于接收json数据
+@PathVariable用于接收路径参数，使用{参数名称}描述路径参数
+应用
+后期开发中，发送请求参数超过1个时，以json格式为主，@RequestBody应用较广
+如果发送非json格式数据，选用@RequestParam接收请求参数
+采用RESTful进行开发，当参数数量较少时，例如1个，可以采用@PathVariable接收请求路径变量，通常用于传递id值
+
+前后端协议联调
+前后端分离结构设计中页面归属前端服务器
+单体工程中页面放置在resources目录下的static目录中（建议执行clean)
+
+创建springmvc的异常处理器
+    @controllerAdvice在类上标注，表示声明该类为异常处理器
+    @RestcohtrollerAdvice=@controllerAdvic+@ResponseBody
+    @ExceptionHandler拦截所有的异常信息，在方法上标注
+    @ExceptionHandler(Exception.class)
+1.使用注解@RestControllerAdvice定义SpringMVC异常处理器用来处理异常的
+2.异常处理器必须被扫描加载，否则无法生效
+3.表现层返回结果的模型类中添加消息属性用来传递消息到页面
+springboot项目快速启动（windows版）
+    对SpringBoot项目打包（执行Maven构建指令package)
+    mvn package
+    运行项目（执行启动指令)
+    java -jar springboot.jar
+
+windonws端口被占用
+#查询端口
+    netstat -ano #查询指定端口
+    netstat -ano |findstr“端口号" #根据进程PID查询进程名称
+    tasklist |findstr“进程PID号" #根据PID杀死任务
+    taskkill /F/PID"进程PID号" #根据进程名称杀死任务
+    taskkill -f -t -im "进程名称"
+
+运维篇
+  在项目运行中更改服务器的运行端口
+    java -jar springboot_08_ssmp-0.0.1-SNAPSHOT.jar --server.port=8080
+  让项目在后台运行 nohup java -jar springboot_08_ssmp-0.0.1-SNAPSHOT.jar
+
+  1．使用jar命令启动SpringBoot工程时可以使用临时属性替换配置文件中的属性
+  2．临时属性添加方式:java -jar工程名.jar --属性名=值
+  3.多个临时属性之间使用空格分隔
+  4．临时属性必须是当前boot工程支持的属性，否则设置无效
+
+  在开发中，自己开发用的数据库与项目经理所发布统一的数据库配置不一样，所以可以设一个优先级比开发配置环境高的配置文件
+  在resources目录下设置一个config文件夹，在文件夹里复制一份配置文件（文件名必须为application.yml）到config
+  文件夹，然后更改config文件夹里的配置文件，config文件夹里的配置文件比在外面的配置文件优先级高，若config文件夹里的
+  配置文件里没有的配置而外面的配置文件里有，则合并。同样的，比前两个更高级别的配置文件是在打成jar包后的项目文件的同一目录
+  下复制粘贴application.yml文件，比前三个更高级别的配置文件是在打成jar包后的项目文件的同一目录下创建config文件夹，
+  复制粘贴application.yml文件到文件夹里，
+
+  配置文件分类
+  1. SpringBoot中4级配置文件
+    1级: file : config/ application.yml【最高】
+    2级: file : application. yml
+    3级: classpath: config/ application.yml
+    4级: classpath: application.yml【最低】
+  2.作用:
+  1级与2级留做系统打包后设置通用属性，1级常用于运维经理进行线上整体项目部署方案调控3级与4级用于系统开发阶段设置通用属性，
+  3级常用于项目经理进行整体项目属性调控
+
+自定义配置文件
+    因为springboot只识别application 所以起其他名字不生效
+    解决办法：
+        1、在运行配置中的参数项：Program arguments: --spring.config.name=ebank（配置文件名，不加后缀）
+        2、在idea设置里面改
+        3、将配置文件后缀改为yml而不是properties
+        4、在运行配置中的参数项：Program arguments: --spring.config.location=全路径名或classpath:/ebank.yml
+
+多环境开发
+    1．多环境开发需要设置若干种常用环境，例如开发、生产、测试环境
+    2. yaml格式中设置多环境使用---区分环境设置边界
+    3．每种环境的区别在于加载的配置属性不同
+    4．启用某种环境时需要指定启动时使用该环境
+    5、可以配置多个文件，用一个主文件统一调用（参照：springboot_config/resources/history/multiply）
+
+多配置文件开发（参照：springboot_config/resources）
+    spring:
+      profiles:
+        active: dev
+        include: devMVC,devDB
+
+      后加载的内容覆盖先加载的内容，例如：devDB覆盖devMVC里的内容，dev文件最后加载，相同配置内容不同，按dev配置来
+
+      因为多环境开发有测试生产与开发环境，所以上面的写法有些不合适，可以按照下面的写法来，active哪个环境就加载该环境
+      相关的指定的所有文件，上下两种配置方式配置文件的加载顺序不同，下面这种先加载主配置文件dev，后按顺序加载，还是后
+      加载的覆盖先加载的，说明一切以最后加载的配置文件为主
+      spring:
+        profiles:
+          active: dev
+          group:
+            "dev": devDB,devMVC
+            "pro": proDB,proMVC
+            "test": testDB,testMVC
+
+      根据功能对配置文件中的信息进行拆分，并制作成独立的配置文件，命名规则如下
+          application-devDB.yml
+          application-devRedis.yml
+          application-devMVC.yml
+          使用include属性在激活指定环境的情况下，同时对多个环境进行加载使其生效，多个环境间使用逗号分隔
+          spring:
+            profiles:
+              active: dev
+              include: devDB, devRedis,devMVC
+
+      当springboot与maven的环境冲突的时候就用maven的环境
+
+       maven中设置多环境配置,并用springboot的配置文件引用
+      (1)maven中设置多环境配置
+        <profiles>
+        <!--配置dev环境-->
+            <profile>
+                <id>dev_env</id>
+                <properties>
+                    <profile.active>dev</profile.active>
+                </properties>
+                <!--在该配置里配置activation标签来声明默认生效的环境-->
+                <activation>
+                    <activeByDefault>true</activeByDefault>
+                </activation>
+            </profile>
+            <!--配置pro环境-->
+            <profile>
+                <id>pro_env</id>
+                <properties>
+                    <profile.active>pro</profile.active>
+                </properties>
+            </profile>
+        <!--配置测试环境-->
+            <profile>
+                <id>test_env</id>
+                <properties>
+                    <profile.active>test</profile.active>
+                </properties>
+            </profile>
+        </profiles>
+
+      (2)SpringBoot中引用Maven属性
+          spring:
+            profiles:
+                active: @profile.active@
+
+    基于SpringBoot读取Maven配置属性的前提下，如果在Idea下测试工程时pom.xml每次更新需要手动compile方可生效
+
+日志的设置
+    1、设置记录日志的对象：Logger log=LoggerFactory.getLogger(本类的类名.class);
+                    五种等级的日志：   log.trace("trace");
+                                    log.debug("debug...");
+                                    log.info("info...");
+                                    log.warn("warn...");
+                                    log.error("error...");
+
+    2、一般情况下是看不到debug的日志信息的，可以调出来
+        方法：
+            1、在运行配置的Program arguments中填写 --debug
+            2、在springboot配置文件里填写debug: true
+            3、logging:(推荐)
+                 level:
+                   root: debug
+    3、如果有很多包都要设置不同的级别，则可以用分组
+        logging:
+          #设置分组
+          group:
+            组名: 包名,包名
+
+          level:
+            指定组名：日志级别（debug、info、warn、error）
+
+    4、1中每写一个类就要写一个日志对象，太麻烦，lombok中提供注解@Slf4j，直接解决，用的时候还是log.info()（要添加lombok依赖）
+
+    5、设置日志输出格式：
+        logging:
+          pattern:
+            console: "%d - %m%n"
+            #%d:日期 %m:消息 %n:换行 %5p:%p代表日志名称，5代表5个占位符 %clr():上颜色 %t:线程名
+            #%c:类名 %-5p：左对齐，5个占位符 %-40.40c：左对齐，40个占位符,.40代表内容截取，超过40位则截取
+            %clr(){颜色英文名称}:给指定的内容上指定的颜色
+开启热部署方法（热部署只在开发环境有效）
+    （1）开启开发者工具
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+            <optional>true</optional>
+        </dependency>
+    （2）激活热部署:Ctrl + F9
+
+    devtools:
+      restart:
+    #设置不参与热部著的文件或文件夹
+        exclude: static/**,public/**,config/application.yml
+        #关闭热部署
+        enabled: false
+    但是由于，conf文件夹里的配置文件优先级高一些，在那里改完之后这里就失效了，所以要找个优先级更高的方法：OS.environment
+    方法：在启动类里设置 System.setProperty("spring.devtools.restart.enabled","false");
+
+    @ConfigurationProperties在指定类上使用 将配置文件里的属性注入到指定类里，绑定属性支持属性名宽松绑定，
+    绑定前缀名命名规范:仅能使用纯小写字母、数字、下划线作为合法的字符，@Value注解不支持松散绑定
+
+    @EnableConfigurationProperties注解可以将使用@ConfigurationProperties注解对应的类加入Spring容器
+    两种方式完成注入：
+                1、每个类上加上@Component+@ConfigurationProperties("前缀")
+                2、在启动类上加@EnableConfigurationProperties({要注入且类上有@ConfigurationProperties("前缀")的类名.class})
+
+     <!--解决 @ConfigurationProperties idea上方报错警告问题-->
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-configuration-processor</artifactId>
+            </dependency>
+
+    宽松绑定
+        配置文件的前缀无论是纯大写，纯小写，有下划线，有中划线，某个字母大小写，都可以匹配到
+
+    @DurationUnit(ChronoUnit.MINUTES)//专门定义时间的计量单位的注解
+    private Duration serverTimeOut;//jdk8以后可以定义时间的类
+    @DataSizeUnit(DataUnit.MEGABYTES)//专门定义数据容量的计量单位的注解，也可以直接在配置文件里加配置的数据后面加单位，例如:MB
+    private DataSize dataSize;//定义数据容量的类
+
+    校验：
+        1、导入两个依赖：validation（JSR303）校验规范，hibernate校验引擎
+        2、在要校验值的类上加上注解@Validated
+        3、在要校验的属性上加上要校验的规则的注解，例如：@Max、@Min
+    当配置文件里要输入密码等信息时，最好加引号，因为int支持2、8、10、16进制，可能被转换
+
+    //在测试类里面临时加一些属性与配置，在其他地方以及其他测试类里不生效
+    用properties属性配置，properties的配置文件的优先级别
+    @SpringBootTest(properties ={"test.prop=testvalue1"} )
+    用args属性配置,命令行的优先级别
+    @SpringBootTest(args ={"--test.prop=testvalue1"} )
+
+    使用@Import注解加载当前测试类专用的配置(配置类)，参考springboot_test->SpringTest.java
+ 在测试环境中启动web环境，
+    RANDOM_PORT表示随机端口，还有其他选择，例如定义端口
+    @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+
+ 在测试方法中引入虚拟web环境
+    1、在测试类上写注解
+        //开启虚拟MVC调用，开启后就可以使用MockMvc对象了
+        @AutoConfigureMockMvc
+    2、//注入虚拟mvc调用对象，在方法形参上加@Autowired MockMvc mockMvc
+    3、//创建虚拟请求，当前访问：/books
+        MockHttpServletRequestBuilder mgsrb= MockMvcRequestBuilders.get("/books");
+    4、//执行请求
+       ResultActions resultActions=mockMvc.perform(mgsrb);
+
+ 防止测试类在数据库添加数据
+    用事务机制防止提交->添加@Traditional  @Rollback(true)注解
+
+ 可以在配置文件中设置随机数
+ 测试用例数据通常采用随机值进行测试，使用SpringBoot提供的随机数为其赋值
+ testcast:
+   book :
+     id: ${random.int}
+     #随机整数
+     id2: ${random.int(10)}
+     #10以内随机数
+     type: ${random.int(10,20)}# 10到20随机数
+     #随机uuid
+     uuid: ${random.uuid}
+     name: ${random.value}
+     #随机字符串, MD5字符串,32位
+     publishTime: ${random.long}#随机整数(Long范围)
+
+     SpringBoot提供了3种内嵌的数据源对象供开发者选择
+         HikariCP：url要写在外面，要不然会报错
+         Tomcat提供DataSource
+         commons DBCP
+      SpringBoot提供了内置的持久化技术供开发者使用
+         JdbcTemplate
+
+      SpringBoot提供了3种内嵌数据库供开发者选择，提高开发测试效率
+          H2
+          HSQL
+          Derby
+    实验H2的用法：
+      导入H2相关坐标
+      <dependency>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-starter-data-jpa</artifactId>
+      </dependency>
+      <dependency>
+          <groupId>com.h2database</groupId>
+          <artifactId>h2</artifactId>
+          <scope>runtime</scope>
+      </dependency>
+
+       设置当前项目为web工程，并配置H2管理控制台参数，在配置文件中配置如下参数：
+       server:
+         port: 80
+       spring: h2
+         console:
+           path: /h2
+           enabled: true
+         datasource:
+             url: jdbc:h2:~/test
+             hikari:
+               driver-class-name: org.h2.Driver
+               username: sa
+               password: 123456
+
+       用法：配置好配置文件后，直接用jdbcTemplate自动装配
+
+       数据源          持久化              数据库
+       Druid         MyBatis-Plus       MySQL
+       Hikari        MyBatis             H2
+                     JdbcTemplate
+
+       NoSQL解决方案
+         市面上常见的NoSQL解决方案
+           Redis
+           Mongo
+           ES
+
+   Redis是一款key-value存储结构的内存级NoSQL数据库
+       支持多种数据存储格式
+       支持持久化
+       支持集群
+    命令：
+        开启：
+            服务器：redes-server.exe redis.windows.conf
+            客户端：redis-cli.exe
+        第一次初始化在windows有个小bug，必须先开启客户端执行shutdown命令，再执行服务器开启命令。
+        keys * 查看所有key
+        set name itheima 设置key=name value=itheima
+        get name 取出key为name的值
+        hset name1 key1 value1 设置key=name1，值为{key1=value1}
+        hset name1 key2 value2 设置key=name1，值为{key2=value2}
+        hget name1 key2 取出name1的key为key2的值
+
+   springboot整合redis：
+        1、导依赖坐标 <dependency>
+                           <groupId>org.springframework.boot</groupId>
+                           <artifactId>spring-boot-starter-data-redis</artifactId>
+                       </dependency>
+        2、配置文件配置 spring:
+                   redis:
+                     host: localhost
+                     port: 6379
+
+        3、使用注解@AutoWired来自动装配 RedisTemplate对象/StringRedisTemplate对象，俩对象的区别是操作对象，前者操作
+            object对象，后者操作字符串对象，前者操作后在命令行读不出来
+        4、使用RedisTemplate对象的方法操作
+
+   jedis是操作redis的传统客户端
+      1、导入依赖坐标
+        <dependency>
+           <groupId>redis.clients</groupId>
+           <artifactId>jedis</artifactId>
+        </dependency>
+
+      2、配置文件配置
+      spring:
+          redis:
+            host: localhost
+            port: 6379
+            client-type: jedis
+
+   lettcus与jedis区别
+   jedis连接Redis服务器是直连模式，当多线程模式下使用jedis会存在线程安全问题，解决方案可以通过配置连接池使每个连接专用，
+   这样整体性能就大受影响。
+   lettcus基于Netty框架进行与Redis服务器连接，底层设计中采用StatefulRedisConnection。StatefulRedisConnection
+   自身是线程安全的，可以保障并发访问安全问题，所以一个连接可以被多线程复用。当然lettcus也支持多连接实例一起工作。
+
+   MongoDB是一个开源、高性能、无模式的文档型数据库。NoSQL数据库产品中的一种，是最像关系型数据库的非关系型数据库，
+   临时存储，修改频度较高的数据适合用，如果需要永久存储则需与MySQL相结合
+
+   用法：
+     启动：
+       服务器：mongod --path=../data/db
+       客户端：mongo
+    // db.getCollection('book').find({})//与db.book.find()作用相同
+    //增：insert/save
+    // db.book.insert({name:"springboot",status:"200",process:"ing"})
+    //db.book.insert({history:"it is so boring!",name:"history"})
+    //db.book.insert({name:"springboot",status:"200",process:"ing",text:"it makes me so insteresting"})
+    //改
+    //db.book.update({name:"springboot"},{$set:{text:"it is make me up"}})
+    //删
+    //db.book.remove({name:"springboot"})
+
+    基础查询
+    查询全部:db.集合.find( ) ;
+    查第一条: db.集合.findOne()
+    查询指定数量文档:db.集合.find().limit(10)//查10条文档
+    跳过指定数量文档:db.集合.find().skip(20)//跳过20条文档
+    统计: db.集合.count()
+    排序:db.集合.sort({age:1})//按age升序排序
+    投影: db.集合名称.find(条件,{name : 1,age:1})//仅保留name与age域
+    条件查询
+    基本格式:db.集合.find({条件})
+    模糊查询:db.集合.find({域名:/正则表达式/})//等同SQL中的like，比like强大，可以执行正则所有规则
+    条件比较运算:db.集合.find({域名:{$gt:值}})//等同sQL中的数值比较操作，例如:name>18
+    包含查询: db.集合.find({域名:{$in:[值1，值2]}})//等同于sQL中的in
+    条件连接查询:db.集合.find({$and:[{条件1},{条件2}]})//等同于SQL中的and、or
+
+ springboot整合mongodb
+    SpringBoot整合Mongodb
+    导入Mongodb对应的starter
+    配置mongodb访问uri
+    提供操作Mongodb接口对象MongoTemplate
+
+ Elasticsearch (ES)
+    Elasticsearch是一个分布式全文搜索引擎
+    创建/查询/删除索引
+    PUT http://localhost:9200/books
+    GET http://localhost:9200/books
+    DELETE http://localhost:9200/books
+
+ 创建索引并指定规则
+{
+ "mappings" : {
+     "properties" : {
+
+     "id" : {
+     "type" :"keyword"
+     }，
+
+     "name" : {
+     "type" :"text",
+     "analyzer":"ik_max_word",
+     "copy_to" :"all"
+     }，
+
+     "type" : {
+     "type" :"keyword"
+     }，
+
+     "description" : {"type" :"text"，
+     "analyzer" :"ik_max_word"，
+     "copy_to" :"all"
+     }，
+
+     "all":{
+     "type" :"text",
+     "analyzer":" ik_max_word"
+     }
+ }
+}
+
+创建文档
+POST http://localhost:9200/books/_doc #使用系统生成id
+POST http://localhost:9200/books/_create/1 #使用指定id,
+POST http://localhost:9200/books/_doc/1 #使用指定id，不存在创建,存在更新（版本递增)
+"name" :"springboot",
+"type" :"springboot",
+"description" :"springboot"
+
+查询文档
+GET http://localhost:9200/books/_doc/1 #查询单个文档
+GET http://localhost:9200/books/_search #查询全部文档
+条件查询
+GET http://localhost:9200/books/_search?q=name:springboot
+删除文档
+DELETE http: // localhost: 9200/books/_doc/1
+
+修改文档(全量修改)
+PUT
+http://localhost:9200/books/_doc/1
+{
+”name" :” springboot",
+"type" : ”springboot",
+"description" : "springboot”
+}
+
+修改文档（部分修改)
+POST http://localhost:9200/books/_update/1
+"doc": {
+"name" :"springboot"
+}
+关于springboot 与ES的整合，看105-106p
+
+springboot整合缓存
+    1、导入<dependency>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-cache</artifactId>
+                </dependency>
+    2、在启动类里添加注解 @EnableCaching
+    3、    //在方法上加@cacheable注解，key=“#参数名”，value=“随便起个名字”，还有个注解@CachePut(value="cacheSpace" ,key="#id")，只往缓存里放
+
+    public Book getById(Integer id) {
+      return bookDao.selectById(id);
+      }
+
+    4、步骤三里放入缓存后，从缓存里取出
+    @cacheable(value="cacheSpace" ,key="#tele")
+        public String get(String tele){
+            return null;
+        }
+        注意：不能与调用该方法的方法在同一实例，否则，ioc容器代理失败，注解失效
+
+
+
+   springboot已整合的缓存技术：Generic JCache Ehcache Hazelcast lnfinispan couchbase Redis
+                     caffenine Simple（默认) memcached（这个市面上常用，但是springboot没有整合）
+
+springboot整合缓存（encache）
+    1、导依赖，加入Ehcache坐标（缓存供应商实现)
+    <dependency>
+         <groupId>net.sf.ehcache</groupId>
+         <artifactId>ehcache</artifactId>
+    </dependency>
+    2、在配置文件里设置缓存类型为encache
+    3、缓存设定为使用Ehcache
+      spring:
+        cache:
+          type: ehcache
+          ehcache:
+            config: ehcache.xml
+
+springboot整合缓存（redis）
+    1、导坐标，加入Redis坐标（缓存供应商实现)
+    <dependency>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-starter-data-redis</artifactId>
+    </dependency>
+
+    2、配置Redis服务器，缓存设定为使用Redis
+      spring:
+        redis:
+          host: localhost
+          port: 6379
+        cache:
+          type: redis
+
+springboot整合缓存（memcached）
+    1、加入Xmemcache坐标（缓存供应商实现)
+    <dependency>
+      <groupId>com.googlecode.xmemcached</groupId>
+      <artifactId>xmemcached</artifactId>
+      <version>2.4.7</version>
+    </dependency>
+
+    2、手动实例化对象放入bean容器（配置一个配置类）
+    3、若需要配置可以在配置文件里自定义配置
+    4、向其他的一样 自动装配EmecachedTemplate类，然后用装配后的类的方法实现操作
+
+jetCache对SpringCache进行了封装，在原有功能基础上实现了多级缓存、缓存统计、自动刷新、异步调用、数据报表等功能
+    jetCache设定了本地缓存与远程缓存的多级缓存解决方案
+    本地缓存（local)：
+        LinkedHashMap
+        Caffeine
+    远程缓存(remote)：
+        Redis
+        Tair
+
+    1、导坐标：
+        <!-- https://mvnrepository.com/artifact/com.alicp.jetcache/jetcache-starter-redis -->
+        <dependency>
+            <groupId>com.alicp.jetcache</groupId>
+            <artifactId>jetcache-starter-redis</artifactId>
+            <version>2.6.0</version>
+        </dependency>
+    2、配置文件做配置（远程配置）
+        jetcache:
+            statIntervalMinutes: 1 #每一分钟显示一次统计信息（缓存使用情况，性能）
+
+            remote:
+              default:
+                type: redis
+                host: localhost
+                port: 6379
+                poolconfig:
+                  maxTotal: 50
+                valueEncode: java
+                valueDecode: java
+
+              sms:
+                type: redis
+                host: localhost
+                port: 6379
+                poolConfig:
+                  maxTotal: 50
+        （本地配置）
+        jetcache:
+          local:
+             default:
+               type: linkedhashmap
+               keyConvertor: fastjson
+
+    3、在启动类上添加注解：启动缓存的主开关 @EnableCreateCacheAnnotation，
+                        //basePackages为：使用注解从缓存里存取数据的方法的所在包的包名
+                       开启方法注解缓存@EnableMethodCache(basePackages="com.itheima")
+
+    4、（代码实现）
+        //创建缓存对象并添加注释声明这个对象是个缓存对象，此注解还有一个参数cacheType=CacheType.BOTH/LOCAL/REMOTE,默认为REMOTE
+       @CreateCache(area="sms",name="jetCache",expire = 3600,timeUnit = TimeUnit.SECONDS)
+       private Cache<String ,string> jetcache;
+       //放对象
+       jetcache.put(参数名,code) ;
+       //取对象
+       jetcache.get(smscode.getTele());
+
+       （注解实现）
+       在方法上加：
+       @Cached(name="book" ,key="#id" , expire = 3600,cacheType =CacheType.LOCAL)
+       @CacheRefresh(refresh = 5)//每5秒重新查询一次，使得缓存中的数据与数据库中的数据保持一致；
+        public Book getById ( Integer id) {
+        return bookDao.selectById(id);
+        }
+
+       更新缓存：
+        CacheUpdate(name="book_",key="#book.id" , value="#book")
+        public boolean update(Book book) { return bookDao.updateById(book)> 0; }
+       删除缓存：
+        @CacheInvalidate(name="book_",key = "#id")
+        public boolean delete(Integer id) { return bookDao.deleteById(id) > 0;}
+
+    缓存供应商变更:j2cache
+        j2cache是一个缓存整合框架，可以提供缓存的整合方案，使各种缓存搭配使用，自身不提供缓存功能
+        1、导坐标：  <dependency>
+                          <groupId>net.oschina.j2cache</groupId>
+                          <artifactId>j2cache-spring-boot-starter</artifactId>
+                          <version>2.8.0-release</version>
+                      </dependency>
+                      <dependency>
+                          <groupId>org.springframework.boot</groupId>
+                          <artifactId>spring-boot-starter</artifactId>
+                      </dependency>
+        2、做配置
+        properties.yml
+            j2cache:
+              config-location: j2cache.properties
+
+        j2cache.properties
+            #1级缓存
+            j2cache.L1.provider_class = ehcache
+            ehcache .configxml = ehcache.xml
+            #2级缓存
+            j2cache.L2.provider_class = net.oschina.j2cache.cache.support.redis.SpringRedisProvider
+            j2cache.L2.config_section = redis
+            redis.hosts = localhost:6379
+            #1级缓存中的数据如何到达二级缓存
+            j2cache.broadcast = net.oschina.j2cache.cache.support.redis.springRedisPubSubPolicy
+
+            redis.mode = single
+            redis.namespace = j2cache
+            #设置是否启用二级缓存
+            j2cache.l2-cache-open = false
+
+
+        3、@Autowired
+          private Cachechannel cacheChannel;
+          cacheChannel.set("sms",tele,code);
+          String code = cacheChannel.get("sms",smsCode.getTele()).asString()
+
+
+市面上流行的定时任务技术
+  Quartz
+  Spring Task
+
+  相关概念
+  工作(Job):用于定义具体执行的工作
+  工作明细(JobDetail) :用于描述定时工作相关的信息
+  触发器（Trigger):用于描述触发工作的规则，通常使用cron表达式定义调度规则
+  调度器( Scheduler):描述了工作明细与触发器的对应关系
+
+  触发器绑定工作明细，工作明细中指定工作
+
+  1、导坐标：<dependency>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-quartz</artifactId>
+                </dependency>
+  2、创建一个类继承QuartzJobBean，作为工作明细
+  3、配置类配置触发器与工作明细的对象
+   //工作明细
+      @Bean
+      public JobDetail printJobDetail() {
+          //绑定具体的工作,storeDurably():创建后，若不使用，则持久化，而不是被回收
+          return JobBuilder.newJob(Task1.class).storeDurably().build();
+      }
+    //触发器
+       @Bean
+       public Trigger buildTrigger(){
+           //绑定对应的工作明细,forJob（）：绑定工作明细，withSchedule（）：设置启动时间规则
+           ScheduleBuilder scheduleBuilder=CronScheduleBuilder.cronSchedule("0/5 * * * * ?");
+           return TriggerBuilder.newTrigger().forJob(printJobDetail()).withSchedule(scheduleBuilder).build();
+       }
+
+    步骤2、3优化，
+        在启动类上加注解@EnableScheduling，
+        在要执行任务的方法上加注解 @Scheduled(cron = "0/10 * * * * ?")
+
+    定时任务相关配置
+    spring:
+      task :
+        scheduling:
+    #任务调度线程池大小默认1
+          pool:
+            size: 1
+    #调度线程名称前缀默认
+          scheduling-thread-name-prefix: ssm_
+    shutdown :
+    #线程池关闭时等待所有任务完成
+      await-termination: false
+    #调度线程关闭前最大等待时间，确保最后一定关闭
+      await-termination-period: 10s
+
+ 发送邮件
+    1、导坐标<dependency>
+                     <groupId>org.springframework.boot</groupId>
+                     <artifactId>spring-boot-starter-mail</artifactId>
+                 </dependency>
+    2、配置文件做配置
+        spring:
+          mail:
+            host: smtp.qq.com
+            username:*********@qq.com
+            password:*********
+
+    3、@Service
+      public class SendMailServiceImpl implements SendMailService {
+      private String from =“********@qq.com" ;//发送人
+      private String to = "********@126.com" ;//接收人
+      private String subject = "测试邮件";//邮件主题
+      private String text =“测试邮件正文" ;//邮件内容
+
+      @Autowired
+      private JavaMailSender javaMailSender;
+      @Override
+      public void sendMail() {
+      SimpleMailMessage mailMessage = new SimpleMailMessage();mailMessage.setFrom( from);
+      mailMessage.setTo(to);
+      mailMessage.setSubject( subject);
+      mailMessage.setText(text);
+      javaMailSender.send (mailMessage );
+      }
+      }
+      4、发一封复杂的邮件（有附件，有链接）
+      MimeMessage message = javaMailsender.createMimeMessage();
+      //是否允许发附件
+      MimeMessageHelper helper = new MimeMessageHelper(message,multipart: true);
+      helper.setFrom(from+"(小甜甜)");
+      helper.setTo(to);
+      helper.setsubject(subject);
+      //是否允许网页解析邮件内容
+      helper.setText( context,true);
+      //添加附件
+      File f1 = new File()
+      File f2 = new File()
+      helper.addAttachment(f1.getName( ),f1);
+      helper.addAttachment("最靠谱的培训结构",f2);
+      javaMailsender.send(message) ;
+
+ 企业级应用中广泛使用的三种异步消息传递技术
+ JMS(Java Message Service) :一个规范，等同于JDBC规范，提供了与消息服务相关的API接口
+    JMS消息模型
+    peer-2-peer:点对点模型，消息发送到一个队列中，队列保存消息。队列的消息只能被一个消费者消费，或超时
+    publish-subscribe:发布订阅模型，消息可以被多个消费者消费，生产者和消费者完全独立，不需要感知对方的存在
+    JMS消息种类
+    TextMessage
+    MapMessage
+    BytesMessage
+    StreamMessage
+    objectMessage
+    Message (只有消息头和属性)
+    JMS实现:ActiveMQ、Redis、HornetMQ、RabbitMQ、RocketMQ（没有完全遵守JMS规范)
+
+ AMQP (advanced message queuing protocol):一种协议（高级消息队列协议，也是消息代理规范），
+                                            规范了网络交换的数据格式，兼容JMS
+                                            (无论是什么语言写的消息，都遵循这一种规范，就可以互通)
+    AMQP消息模型
+    direct exchange
+    fanout exchange
+    topic exchange
+    headers exchange
+    system exchange
+
+    AMQP消息种类:byte[]
+    AMQP实现:RabbitMQ、StormMQ、RocketMQ
+
+
+ MQTT (Message Queueing Telemetry Transport）消息队列遥测传输，专为小设备设计，
+ 是物联网（IOT）生态系统中主要成分之一
+
+ Kafka，一种高吞吐量的分布式发布订阅消息系统，提供实时消息功能。
+
+ 消息
+ ·ActiveMQ
+ ·RabbitMQRocketMQ
+ . Kafka
+
+ ActiveMQ
+    1、导坐标，
+    <! --activemq-->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-activemq</artifactId>
+    </dependency>
+    2、配置
+     spring:
+       activemq:
+         broker-url:tcp://locaihost:61616
+       jms :
+         template:
+           default-destination: itheima
+
+    3、
+    @Autowired
+    private JmsMessagingTemplate messagingTemplate;
+    messagingTemplate.convertAndSend(id);
+    messagingTemplate.receiveAndConvert(String.class);
+
+    在方法前加这个注解：@JmsListener(destination = "order.queue.id ")，表示监听消息发送，只要消息已发送就直接收到
+                    @sendTo( "order.other.queue.id")，可以将方法的返回值放入指定消息队列
+
+
+ RabbitMQ基于Erlang语言编写，需要安装Erlang
+    环境变量配置
+        ERLANG_HOME
+        PATH
+
+可视化监控平台
+    Spring Boot Admin，开源社区项目，用于管理和监控SpringBoot应用程序。客户端注册到服务端后，通过HTTP请求方式，服务端定期从客户端获取对应的信息，
+    并通过UI界面展示对应信息。
+
+
+    服务器端：
+    1、导坐标：
+    <dependency>
+      <groupId>de.codecentric</groupId>
+      <artifactId>spring-boot-admin-starter-server</artifactId>
+    </dependency>
+    2、配置文件配置
+    server:
+      port: 8080
+    3、启动类加注解@EnableAdminServer
+
+    客户端：
+        1、导坐标：
+        <dependency>
+                    <groupId>de.codecentric</groupId>
+                    <artifactId>spring-boot-admin-starter-client</artifactId>
+                </dependency>
+
+        2、写配置
+            server:
+              port: 8082
+            spring:
+              boot:
+                admin:
+                  client:
+                    url: http://localhost:8080
+            management:
+            #系统允许展示哪些状态
+              endpoint:
+                health:
+                  show-details: always
+              endpoints:
+              #web端允许显示哪些状态
+                web:
+                  exposure:
+                    include: "*"
+
+        启动服务器与客户端，即可在服务器中看到客户端的信息
+
+
+    启用指定端点
+    management:
+      endpoint:
+        health:
+        #端点名称
+        enabled: true
+        show-details: always
+      beans:
+        #端点名称
+        enabled: true
+
+    启用所有端点
+    management:
+      endpoints:
+        enabled-by-default: true
+
+    #客户端信息显示到服务器端web上
+    方法1、在配置文件上写信息
+        info:
+            appName: @project.artifactId@
+            version: @project.version@
+            company:传智教育
+            author: itheima
+
+    方法2、@Component
+        public class InfoConfig implements InfoContributor {
+        @override
+        public void contribute( Info.Builder builder) {
+            builder.withDetail("runTime" ,system.currentTimeMillis());
+            Map infoMap = new HashMap();
+            infoMap.put("buildTime","2006");
+            builder.withDetails(infoMap);
+        }
+        }
+    自定义健康状态信息：
+        public class Healthconfig extends AbstractHealthIndicator {
+        @override
+        protected void doHealthcheck(Health.Builder builder) throws Exception {
+            boolean condition = false;
+            if( condition) {
+                builder.withDetail( "runTime" , system.currentTimeMillis());
+                Map infoMap = new HashMap();
+                infoMap.put( "buildTime", "2006");builder.withDetails(infoMap);
+                builder.status(Status.UP);
+            }else{
+                builder.withDetail("上线了吗? ","你做梦");
+                builder.status(Status.DOWN);
+            }
+        }
+
+    自定义性能信息：
+        为Metrics端点添加自定义指标
+        @Service
+        public class BookServiceImpl extends ServiceImpl<BookDao，Book> implements IBookService {
+            private Counter counter;
+            public BookServiceImpl(MeterRegistry meterRegistry){
+                counter = meterRegistry.counter("用户付费操作次数:");
+            }
+            @Override
+            public boolean delete(Integer id) {
+                counter.increment();
+                return bookDao.deleteById(id) >0;
+            }
+        }
+     自定义端点：
+        @Component
+        @Endpoint(id="pay")
+        public class PayEndPoint {
+            @ReadOperation
+            public object getPay(){
+                //调用业务操作，获取支付相关信息结果，最终return出去Map payMap = new HashMap();
+                payMap.put( "level 1",103);
+                payMap.put( "level 2",315);
+                payMap.put( "level 3",666);
+                return payMap;
+            }
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
