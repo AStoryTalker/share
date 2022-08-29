@@ -1,5 +1,5 @@
 Springboot是一个框架中的框架，减少框架配置，统一配置信息，方便开发人员更好的编程
-
+second commit
 
 starter
     SpringBoot中常见项目名称，定义了当前项目使用的所有依赖坐标，以达到减少依赖配置的目的
